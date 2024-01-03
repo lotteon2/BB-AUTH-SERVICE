@@ -3,6 +3,7 @@ package com.bit.lot.flower.auth.oauth;
 import com.bit.lot.flower.auth.common.valueobject.AuthenticationProvider;
 import com.bit.lot.flower.auth.oauth.facade.OauthLoginAccessTokenRequestFacade;
 import com.bit.lot.flower.auth.oauth.facade.OauthUserMeInfoRequestFacade;
+import com.bit.lot.flower.auth.social.dto.command.EncryptedSocialLoginRequestCommand;
 import com.bit.lot.flower.auth.social.dto.command.SocialLoginRequestCommand;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;

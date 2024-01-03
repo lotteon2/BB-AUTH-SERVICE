@@ -1,11 +1,16 @@
 package com.bit.lot.flower.auth.social.http.filter;
 
+import com.bit.lot.flower.auth.common.EncryptionUtil;
 import com.bit.lot.flower.auth.common.security.SystemAuthenticationSuccessHandler;
+import com.bit.lot.flower.auth.common.valueobject.AuthId;
 import com.bit.lot.flower.auth.common.valueobject.Role;
+import com.bit.lot.flower.auth.social.dto.command.EncryptedSocialLoginRequestCommand;
 import com.bit.lot.flower.auth.social.dto.command.SocialLoginRequestCommand;
 import com.bit.lot.flower.auth.social.exception.SocialAuthException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -19,6 +24,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.util.UriUtils;
 
 public class SocialAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -35,18 +41,6 @@ public class SocialAuthenticationFilter extends UsernamePasswordAuthenticationFi
   }
 
 
-  private SocialLoginRequestCommand getSocialLoginRequestCommand(HttpServletRequest request) {
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      SocialLoginRequestCommand command = mapper.readValue(request.getInputStream(),
-          SocialLoginRequestCommand.class);
-      request.setAttribute("command", command);
-      return command;
-    } catch (IOException e) {
-      throw new SocialAuthException("잘못된 입력입니다. 아이디 패스워드를 입력해주세요.");
-    }
-  }
-
   private Authentication getAuthenticationFromCommand(SocialLoginRequestCommand command) {
     return new UsernamePasswordAuthenticationToken(command.getSocialId(), null,
         Collections.singleton(new SimpleGrantedAuthority(Role.ROLE_SOCIAL_USER.name())));
@@ -55,13 +49,19 @@ public class SocialAuthenticationFilter extends UsernamePasswordAuthenticationFi
   @Override
   public Authentication attemptAuthentication(HttpServletRequest request,
       HttpServletResponse response) {
-    SocialLoginRequestCommand command = getSocialLoginRequestCommand(request);
     try {
-      Authentication authentication = getAuthenticationFromCommand(command);
+      ObjectMapper mapper = new ObjectMapper();
+      EncryptedSocialLoginRequestCommand encryptedCommand = mapper.readValue(
+          request.getInputStream(),
+          EncryptedSocialLoginRequestCommand.class);
+      SocialLoginRequestCommand decryptedCommand = decryptCommand(encryptedCommand);
+      Authentication authentication = getAuthenticationFromCommand(decryptedCommand);
       socialAuthenticationManager.authenticate(authentication);
+      request.setAttribute("command", decryptedCommand);
+
       return authentication;
 
-    } catch (SocialAuthException e) {
+    } catch (SocialAuthException | IOException e) {
       throw new SocialAuthException(e.getMessage());
     }
   }
@@ -74,8 +74,18 @@ public class SocialAuthenticationFilter extends UsernamePasswordAuthenticationFi
     SecurityContext context = SecurityContextHolder.createEmptyContext();
     context.setAuthentication(authResult);
     SecurityContextHolder.setContext(context);
-    handler.onAuthenticationSuccess(request, response,chain, authResult);
+    handler.onAuthenticationSuccess(request, response, chain, authResult);
   }
+
+  private SocialLoginRequestCommand decryptCommand(
+      EncryptedSocialLoginRequestCommand encryptedCommand) {
+    return SocialLoginRequestCommand.builder()
+        .nickname(UriUtils.decode(encryptedCommand.getNickname(), StandardCharsets.UTF_8))
+        .email(EncryptionUtil.decrypt(encryptedCommand.getEmail()))
+        .socialId(new AuthId(Long.valueOf(EncryptionUtil.decrypt(encryptedCommand.getSocialId()))))
+        .phoneNumber(EncryptionUtil.decrypt(encryptedCommand.getPhoneNumber())).build();
+  }
+
 
 
 }

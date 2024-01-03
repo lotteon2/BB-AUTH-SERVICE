@@ -1,6 +1,7 @@
 package com.bit.lot.flower.auth.social.http.feign;
 
 import bloomingblooms.response.CommonResponse;
+import com.bit.lot.flower.auth.social.dto.command.EncryptedSocialLoginRequestCommand;
 import com.bit.lot.flower.auth.social.dto.command.SocialLoginRequestCommand;
 import com.bit.lot.flower.auth.social.dto.response.UserFeignLoginResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -13,3 +14,4 @@ public interface LoginSocialUserFeignRequest{
   CommonResponse<UserFeignLoginResponse> login(@RequestBody SocialLoginRequestCommand userDto);
 
 }
+

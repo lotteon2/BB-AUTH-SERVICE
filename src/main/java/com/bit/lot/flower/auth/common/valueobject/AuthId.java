@@ -1,6 +1,5 @@
 package com.bit.lot.flower.auth.common.valueobject;
 
-import com.bit.lot.flower.auth.common.valueobject.BaseId;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -10,6 +9,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Getter
 public class AuthId extends BaseId<Long> {
+  public AuthId(String value){
+    super(Long.valueOf(value));
+  }
   public AuthId(Long value) {
     super(value);
   }

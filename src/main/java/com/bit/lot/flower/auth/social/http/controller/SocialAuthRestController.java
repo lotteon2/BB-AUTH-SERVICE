@@ -3,6 +3,7 @@ package com.bit.lot.flower.auth.social.http.controller;
 import bloomingblooms.response.CommonResponse;
 import com.bit.lot.flower.auth.common.valueobject.AuthId;
 import com.bit.lot.flower.auth.common.valueobject.AuthenticationProvider;
+import com.bit.lot.flower.auth.social.dto.command.EncryptedSocialLoginRequestCommand;
 import com.bit.lot.flower.auth.social.dto.command.SocialLoginRequestCommand;
 import com.bit.lot.flower.auth.social.dto.response.UserFeignLoginResponse;
 import com.bit.lot.flower.auth.social.http.feign.UserWithdrawalRequest;

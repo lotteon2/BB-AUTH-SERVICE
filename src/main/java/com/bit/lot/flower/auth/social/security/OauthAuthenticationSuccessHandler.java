@@ -1,23 +1,29 @@
 package com.bit.lot.flower.auth.social.security;
 
-import com.bit.lot.flower.auth.common.util.JsonBinderUtil;
+import com.bit.lot.flower.auth.common.EncryptionUtil;
 import com.bit.lot.flower.auth.social.dto.command.SocialLoginRequestCommand;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 @Component
 @RequiredArgsConstructor
 public class OauthAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
   private final OauthUserInfoFacade oauthUserInfoFacade;
+  @Value("${service.server.domain}")
+  private String domain;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -32,7 +38,15 @@ public class OauthAuthenticationSuccessHandler implements AuthenticationSuccessH
       Authentication authentication) throws IOException {
     DefaultOAuth2User defaultOAuth2User = (DefaultOAuth2User) authentication.getPrincipal();
     SocialLoginRequestCommand command = oauthUserInfoFacade.getCommand(defaultOAuth2User);
-    JsonBinderUtil.setResponseWithJson(response,200,command);
+
+    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(domain)
+        .queryParam("phoneNumber", EncryptionUtil.encrypt(command.getPhoneNumber()))
+        .queryParam("socialId", EncryptionUtil.encrypt(command.getSocialId().getValue().toString()))
+        .queryParam("email", EncryptionUtil.encrypt(command.getEmail()))
+        .queryParam("nickName",
+            UriUtils.encode(command.getNickname(), StandardCharsets.UTF_8));
+
+    response.sendRedirect(builder.toUriString());
   }
 
 

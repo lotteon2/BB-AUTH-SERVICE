@@ -33,12 +33,13 @@ public class OauthSecurityConfig {
             .regexMatchers("/oauth2/authorization/.*$").permitAll()
             .regexMatchers("/login").permitAll()
             .regexMatchers("kauth.*$").permitAll()
-            .regexMatchers("^kapi.*$").permitAll())
-        .formLogin().disable().
+            .regexMatchers("^kapi.*$").permitAll()).
         oauth2Login(oauth2Configurer -> oauth2Configurer.successHandler(
                 successHandler)
             .userInfoEndpoint()
             .userService(oAuth2UserLoadService()));
+    http.formLogin();
+
     return http.build();
   }
 

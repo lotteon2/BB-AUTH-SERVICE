@@ -1,6 +1,7 @@
 package com.bit.lot.flower.auth.social.security;
 
 import com.bit.lot.flower.auth.common.util.OauthInfoConvertor;
+import com.bit.lot.flower.auth.social.dto.command.EncryptedSocialLoginRequestCommand;
 import com.bit.lot.flower.auth.social.dto.command.SocialLoginRequestCommand;
 import com.bit.lot.flower.auth.social.exception.SocialAuthException;
 import com.bit.lot.flower.auth.common.valueobject.AuthId;
