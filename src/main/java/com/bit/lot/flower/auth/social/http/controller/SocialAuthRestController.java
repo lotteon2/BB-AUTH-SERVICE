@@ -3,13 +3,12 @@ package com.bit.lot.flower.auth.social.http.controller;
 import bloomingblooms.response.CommonResponse;
 import com.bit.lot.flower.auth.common.valueobject.AuthId;
 import com.bit.lot.flower.auth.common.valueobject.AuthenticationProvider;
-import com.bit.lot.flower.auth.social.dto.command.EncryptedSocialLoginRequestCommand;
 import com.bit.lot.flower.auth.social.dto.command.SocialLoginRequestCommand;
 import com.bit.lot.flower.auth.social.dto.response.UserFeignLoginResponse;
+import com.bit.lot.flower.auth.social.handler.SocialDataHandler;
 import com.bit.lot.flower.auth.social.http.feign.UserWithdrawalRequest;
 import com.bit.lot.flower.auth.social.http.helper.OauthLogoutFacadeHelper;
 import com.bit.lot.flower.auth.social.http.valueobject.UserId;
-import com.bit.lot.flower.auth.social.message.LoginSocialUserRequest;
 import com.bit.lot.flower.auth.social.service.SocialAuthService;
 import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +27,14 @@ public class SocialAuthRestController {
   private final UserWithdrawalRequest<UserId> socialWithdrawalRequest;
   private final OauthLogoutFacadeHelper oauthLogoutFacadeHelper;
   private final SocialAuthService<AuthId> socialAuthService;
-  private final LoginSocialUserRequest userDataRequest;
+  private final SocialDataHandler socialDataHandler;
 
   @PostMapping("/social/login")
   public CommonResponse<UserFeignLoginResponse> loginWithUserServiceResponse(HttpServletRequest request) {
-    SocialLoginRequestCommand commandFromAuthenticationFilter = (SocialLoginRequestCommand)request.getAttribute("command");
-    UserFeignLoginResponse userFeignLoginResponse = userDataRequest.request(commandFromAuthenticationFilter);
+    SocialLoginRequestCommand commandFromAuthenticationFilter = (SocialLoginRequestCommand) request.getAttribute(
+        "command");
+    UserFeignLoginResponse userFeignLoginResponse = socialDataHandler.loginRequestWithOuternalService(
+        commandFromAuthenticationFilter);
     return CommonResponse.success(userFeignLoginResponse);
   }
 

@@ -28,11 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class StoreManagerRestController{
 
+  private final StoreMangerCreateRequest storeMangerCreateRequest;
   private final StoreManagerNameRequest<AuthId> storeManagerNameRequest;
   private final StoreManagerStoreIdRequest<StoreId,AuthId> storeManagerStoreIdRequest;
   private final EmailDuplicationCheckerService emailDuplicationCheckerService;
   private final StoreManagerService<AuthId> storeManagerService;
-  private final StoreMangerCreateRequest storeMangerCreateRequest;
 
 
   @PostMapping("/stores/emails/{email}")
@@ -45,9 +45,7 @@ public class StoreManagerRestController{
   public CommonResponse<String> signup(@Valid @RequestBody StoreMangerSignUpCommand dto)
       throws JsonProcessingException {
     emailDuplicationCheckerService.isDuplicated(dto.getEmail());
-    Long getSignedUpId = storeManagerService.signUp(dto);
-    storeMangerCreateRequest.publish(
-        StoreManagerMessageMapper.createStoreManagerCommandWithPk(dto, getSignedUpId));
+    storeMangerCreateRequest.publish(dto);
     return CommonResponse.success("스토어 매니저 회원가입 신청 완료 관리자의 승인을 기다려주세요");
   }
 
